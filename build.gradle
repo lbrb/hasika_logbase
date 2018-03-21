@@ -1,0 +1,70 @@
+apply plugin: 'com.android.library'
+android {
+    compileSdkVersion 22
+    buildToolsVersion "25.0.2"
+    lintOptions {
+        abortOnError false
+        //tasks.lint.enabled = false
+        lintConfig file("${project.rootDir}/config/quality/lint/lint.xml")
+        // if true, generate an HTML report (with issue explanations, sourcecode, etc)
+        //htmlReport true
+        // optional path to report (default will be lint-results.html in the builddir)
+        //htmlOutput file("$project.buildDir/reports/lint/lint.html")
+        xmlReport true
+        xmlOutput file("$project.buildDir/reports/lint/lint-results.xml")
+    }
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:recyclerview-v7:23.4.0'
+    testCompile 'junit:junit:4.12'
+}
+
+
+//check.dependsOn 'checkstyle', 'findbugs', 'pmd', 'lint'
+apply plugin: 'findbugs'
+task findbugs(type: FindBugs) {
+    ignoreFailures = true
+    //effort = "max"
+    effort = "default"
+    reportLevel = "medium"
+    //reportLevel = "high"
+    excludeFilter = new File("${project.rootDir}/config/quality/findbugs/findbugs-filter.xml")
+    //classes = files("${project.rootDir}/app/build/classes")
+    //classes = files("${project.rootDir}/andbase-core/build/intermediates/classes")
+    classes = files("$project.buildDir/intermediates/classes")
+    source 'src'
+    include '**/*.java'
+    exclude '**/gen/**'
+    reports {
+        //只能开启一个
+        xml.enabled = true
+        html.enabled = false
+        xml {
+            destination "$project.buildDir/reports/findbugs/findbugs.xml"
+        }
+        html {
+            destination "$project.buildDir/reports/findbugs/findbugs.html"
+        }
+    }
+    classpath = files()
+}
+
